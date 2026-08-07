@@ -63,9 +63,16 @@ jobs:
             "${pretty_logname}" "$(sed "${REGEX_MAKE_OUTPUT} ; ${REGEX_ANSI_COLOR}" < "${log}")" >> "${GITHUB_STEP_SUMMARY}"
         done
 
+    - name: Copy firmware to host workspace
+      if: ${{ success() }}
+      run: |
+        # コンテナ内の.build配下にあるファイルをカレントディレクトリ直下に退避
+        mkdir -p ./output_fw
+        cp -r .build/* ./output_fw/ 2>/dev/null || cp *.bin *.hex *.uf2 ./output_fw/ 2>/dev/null || true
+
     - name: Upload firmware artifact
       if: ${{ success() }}
       uses: actions/upload-artifact@v4
       with:
         name: geonix41-vial-firmware
-        path: .build/*
+        path: ./output_fw/
